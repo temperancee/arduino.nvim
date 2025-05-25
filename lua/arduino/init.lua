@@ -5,7 +5,7 @@ local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
 
 -- consts
-local config_file = "lua/arduino/config"
+local config_file = "/home/alexander/Programming/moon/arduino.nvim/lua/arduino/config"
 local board_tbl = {}
 local port_tbl = {}
 
@@ -90,6 +90,8 @@ local port = function(opts)
     }):find()
 end
 
+
+
 -- NOTE:  we call refresh_board_list() and refresh_port_list() at on startup, then have this plugin loaded only when a .ino file is opened (can we unload it afterwards though?)
 -- We will add keymaps to refresh the lists manually
 
@@ -97,3 +99,5 @@ board_tbl = lists.refresh_board_list()
 port_tbl = lists.refresh_port_list()
 vim.keymap.set("n", "<leader>ab", board, { desc = "Arduino board picker" })
 vim.keymap.set("n", "<leader>ap", port, { desc = "Arduino port picker" })
+vim.keymap.set("n", "<leader>ac", function() commands.compile(config_file) end, { desc = "Arduino compile sketch" })
+vim.keymap.set("n", "<leader>au", function () commands.upload(config_file) end, { desc = "Arduino upload sketch" })

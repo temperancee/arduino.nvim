@@ -1,2 +1,2 @@
-port = /dev/ttyACM0
-fqbn = rp2040:rp2040:seeed_xiao_rp2040
+/dev/ttyACM0
+esp32:esp32:XIAO_ESP32S3
