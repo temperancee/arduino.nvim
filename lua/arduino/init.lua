@@ -7,6 +7,7 @@ local action_state = require "telescope.actions.state"
 -- consts
 local config_file = "lua/arduino/config"
 local board_tbl = {}
+local port_tbl = {}
 
 -- Include modules
 local commands = require "arduino.commands"
@@ -45,8 +46,10 @@ local board = function(opts)
           actions.select_default:replace(function()
             actions.close(prompt_bufnr)
             local selection = action_state.get_selected_entry()
-            selection["type"] = "board" -- this is coming from the board function, if coming from port function, this will be port
-            commands.edit_config(selection, config_file)
+            if selection ~= nil then
+                selection["type"] = "board" -- this is coming from the board function, if coming from port function, this will be port
+                commands.edit_config(selection, config_file)
+            end
             -- commands.test(config_file)
             -- vim.print(selection)
           end)
@@ -55,18 +58,18 @@ local board = function(opts)
     }):find()
 end
 
--- TODO: change the stuff in here to be for port
+-- gets a list of ports - unlike cores, we just reload this every time, because it changes more often
 local port = function(opts)
     opts = opts or {}
     pickers.new(opts, {
         prompt_title = "Select port",
         finder = finders.new_table {
-            results = lists.gen_core_entries(core_file),
+            results = port_tbl,
             entry_maker = function(entry)
                 return {
                     value = entry,
-                    display = entry[4],
-                    ordinal = entry[4]
+                    display = entry,
+                    ordinal = entry
                 }
             end
         },
@@ -77,17 +80,20 @@ local port = function(opts)
           actions.select_default:replace(function()
             actions.close(prompt_bufnr)
             local selection = action_state.get_selected_entry()
-            selection["type"] = "core" -- this is coming from the core function, if coming from port function, this will be port
-            commands.edit_config(selection, config_file)
-            -- commands.test(config_file)
-            -- vim.print(selection)
+            if selection ~= nil then
+                selection["type"] = "port" -- this is coming from the port function
+                commands.edit_config(selection, config_file)
+            end
           end)
           return true
         end,
     }):find()
 end
 
--- NOTE:  we call refresh_board_list() at on startup, then have this plugin loaded only when a .ino file is opened (can we unload it afterwards though?)
+-- NOTE:  we call refresh_board_list() and refresh_port_list() at on startup, then have this plugin loaded only when a .ino file is opened (can we unload it afterwards though?)
+-- We will add keymaps to refresh the lists manually
 
 board_tbl = lists.refresh_board_list()
+port_tbl = lists.refresh_port_list()
 vim.keymap.set("n", "<leader>ab", board, { desc = "Arduino board picker" })
+vim.keymap.set("n", "<leader>ap", port, { desc = "Arduino port picker" })

@@ -28,8 +28,7 @@ function M.edit_config(info, config_f)
     if info.type == "board" then
         contents[2] = "fqbn = "..info.value[2]
     elseif info.type == "port" then
-            -- TODO:
-        contents[1] = "eggs"
+        contents[1] = "port = "..info.value
     end
     -- Write config back
     local file = io.open(config_f, "w")
