@@ -48,10 +48,11 @@ function M.refresh_board_list()
     for line in io.lines() do
         local splt = split(line)
         -- The final word on each line is always the FQBN, then the rest of the words are the board name, so we inset the FQBN to our csv line first, then add the rest of the words as board name
-        local line_arr = {splt[-1]}
-        table.remove(splt, -1)
+        local len = #splt
+        local line_arr = {splt[len]}
+        table.remove(splt, len)
         table.insert(line_arr, 1, table.concat(splt, " "))
-        table.insert(tbl, line_arr)
+        table.insert(board_tbl, line_arr)
     end
     return board_tbl
 end

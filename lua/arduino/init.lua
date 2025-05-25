@@ -6,6 +6,7 @@ local action_state = require "telescope.actions.state"
 
 -- consts
 local config_file = "lua/arduino/config"
+local board_tbl = {}
 
 -- Include modules
 local commands = require "arduino.commands"
@@ -23,7 +24,7 @@ local lists    = require "arduino.lists"
 -- ]]
 
 -- the board picker function
-local core = function(opts)
+local board = function(opts)
     opts = opts or {}
     pickers.new(opts, {
         prompt_title = "Select board",
@@ -85,5 +86,8 @@ local port = function(opts)
         end,
     }):find()
 end
---board()
-lists.refresh_core_list(core_file)
+
+-- NOTE:  we call refresh_board_list() at on startup, then have this plugin loaded only when a .ino file is opened (can we unload it afterwards though?)
+
+board_tbl = lists.refresh_board_list()
+vim.keymap.set("n", "<leader>ab", board, { desc = "Arduino board picker" })

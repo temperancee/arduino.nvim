@@ -1,2 +1,2 @@
 port =
-core = rp2040:rp2040
+fqbn = esp32:esp32:XIAO_ESP32S3
