@@ -4,14 +4,16 @@ local conf = require("telescope.config").values
 local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
 
--- consts
-local config_file = "/home/alexander/Programming/moon/arduino.nvim/lua/arduino/config"
-local board_tbl = {}
-local port_tbl = {}
-
 -- Include modules
 local commands = require "arduino.commands"
 local lists    = require "arduino.lists"
+local util     = require "arduino.util"
+
+-- consts
+local config_file = split(vim.api.nvim_buf_get_name(0), "slash")
+local board_tbl = {}
+local port_tbl = {}
+
 
 
 --[[ TODO:
