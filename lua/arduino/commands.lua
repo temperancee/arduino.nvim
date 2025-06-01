@@ -3,27 +3,6 @@
 
 local M = {}
 
-local function create_term(opts)
-    local buf_exists = opts.buf
-    opts.buf = opts.buf or vim.api.nvim_create_buf(false, true) -- false, true - this buffer is not listed in the buffer list, and it is a scratch buffer, meaning you can discard the text within easily
-end
-
-
-function term_cmd(opts)
-    if opts.cmd == nil then
-        opts.cmd = "echo 'ERROR: no cmd passed!'"
-    end
-    -- We need to create the buffer, then send the keys over, those keys being "clear; <cmd>"
-end
-
-term_cmd{cmd = "echo 'nuts'"}
-
--- [[ 
--- TODO: Add terminal functionality using the built in API.
---       NvChad uses vim.fn.termopen, which seemed promising, but there doesn't seem to be any documentation on it.
---       Also look into why people use opts rather than an actual list of parameters. It seems helpful, but also bad
---       for debugging and readability.
--- ]]
 
 function read_config(config_f)
     -- Read in config
