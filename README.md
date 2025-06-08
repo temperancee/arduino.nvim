@@ -1,5 +1,5 @@
 # arduino.nvim
 
-Arduino integration within Neovim
+Arduino integration within Neovim, using telescope.
 
-We use a configuration file to store the selected core and board because it allows configurations to be saved after closing a neovim session, so you don't have to reconfigure your environment when working on the same project the next day, for example.
+Allows you to update the chosen board and port by via a telescope picker which updates sketch.yaml. Also allows for compilation and uploading of code via a terminal within neovim, mimicking the console within the Arduino IDE.
