@@ -7,18 +7,17 @@ local action_state = require "telescope.actions.state"
 -- Include modules
 local commands = require "arduino.commands"
 local lists    = require "arduino.lists"
-local util     = require "arduino.util"
 
 -- consts
-local config_file = split(vim.api.nvim_buf_get_name(0), "slash")
 local board_tbl = {}
+---@type string[]?
 local port_tbl = {}
 
 
 
 --[[ TODO:
      Call lists.refresh_board_list on startup of a .ino file
-     Bind the commands and figure out how to check if we need to spawn a terminal, and how to check the existing one isn't busy ("terminal is busy, would you like to open a new one?")
+     Bind the commands and figure out how to check the existing one isn't busy ("terminal is busy, please wait until compilation/uploading is finished", don't ask them if they want to open a new terminal, I doubt anyone will need to compile/upload multiple programs at one)
 --]]
 
 -- [[ NOTE:
@@ -49,11 +48,9 @@ local board = function(opts)
             actions.close(prompt_bufnr)
             local selection = action_state.get_selected_entry()
             if selection ~= nil then
-                selection["type"] = "board" -- this is coming from the board function, if coming from port function, this will be port
-                commands.edit_config(selection, config_file)
+                selection["type"] = "board"
+                commands.edit_config(selection)
             end
-            -- commands.test(config_file)
-            -- vim.print(selection)
           end)
           return true
         end,
@@ -84,7 +81,7 @@ local port = function(opts)
             local selection = action_state.get_selected_entry()
             if selection ~= nil then
                 selection["type"] = "port" -- this is coming from the port function
-                commands.edit_config(selection, config_file)
+                commands.edit_config(selection)
             end
           end)
           return true
@@ -94,12 +91,29 @@ end
 
 
 
--- NOTE:  we call refresh_board_list() and refresh_port_list() at on startup, then have this plugin loaded only when a .ino file is opened (can we unload it afterwards though?)
--- We will add keymaps to refresh the lists manually
+-- TODO: Have this plugin loaded only when a .ino file is opened (can we unload it afterwards?)
 
 board_tbl = lists.refresh_board_list()
+if board_tbl == nil then
+    board_tbl = {} -- reset if there is an error
+end
 port_tbl = lists.refresh_port_list()
+if port_tbl == nil then
+    port_tbl = {} -- reset if there is an error
+end
+-- TODO: these keymaps should probably be elsewhere (certainly in their own file)
 vim.keymap.set("n", "<leader>ab", board, { desc = "Arduino board picker" })
 vim.keymap.set("n", "<leader>ap", port, { desc = "Arduino port picker" })
-vim.keymap.set("n", "<leader>ac", function() commands.compile(config_file) end, { desc = "Arduino compile sketch" })
-vim.keymap.set("n", "<leader>au", function () commands.upload(config_file) end, { desc = "Arduino upload sketch" })
+vim.keymap.set("n", "<leader>ac", function() commands.compile() end, { desc = "Arduino compile sketch" })
+vim.keymap.set("n", "<leader>au", function () commands.upload() end, { desc = "Arduino upload sketch" })
+vim.keymap.set("n", "<leader>ar", function ()
+    lists.refresh_board_list()
+    lists.refresh_port_list()
+end, { desc = "Arduino refresh picker lists" })
+
+
+
+-- TODO: Add functionality to:
+-- Auto generate sketch.yaml using default values (default defaults chosen by me, with option to change them by passing opts to lazy) and using arduino-cli board attach -p /dev/ttyACM0 -b arduino:avr:uno test.ino. Auto generate them when port/board picker is first used if one isn't found, or when creating a file as below.
+-- Create sketches using arduino-cli sketch new <name>. This should make use of the users default Arduino directory setting (maybe there is a config for this somewhere, if not, I guess it could be an opts). It will appear in the status bar, sort of like renaming a variable via LSP. It will display the full path, then you can append the name on the end (maybe add a line to tell them not to use .ino on the end, since you're making a sketch directory, not the actual .ino file)
+

@@ -1,29 +1,49 @@
 local M = {}
 
-function M.create_term(opts)
-    local buf_exists = opts.buf
-    opts.buf = opts.buf or vim.api.nvim_create_buf(false, true) -- false, true - this buffer is not listed in the buffer list, and it is a scratch buffer, meaning you can discard the text within easily
+term_ids = {} -- A dictionary connecting terminal IDs (passed into create_term) linked to buffer and channel IDs
+
+
+---@param opts {id: string, cmd: string}
+local function create_term(opts)
+        local shell = vim.o.shell
+        local buf = vim.api.nvim_create_buf(false, true) -- false, true - this buffer is not listed in the buffer list, and it is a scratch buffer, meaning you can discard the text within easily
+        vim.api.nvim_open_win(buf, true, {
+            split = 'below',
+            win = 0,
+            height = 14
+        })
+        -- Run the cmd in the terminal, collecting the channel ID for later use
+        local chan = vim.fn.jobstart({"bash", "-c", opts.cmd .. "; ".. shell}, {term=true})
+        term_ids[opts.id] = {buf=buf, chan=chan}
 end
 
-
-function M.term_cmd(opts)
-    if opts.cmd == nil then
-        opts.cmd = "echo 'ERROR: no cmd passed!'"
+function M.runner_term(opts)
+    if opts.id == nil then
+        print("ERROR: No ID passed")
     end
-    -- We need to create the buffer, then send the keys over, those keys being "clear; <cmd>"
+    opts.cmd = opts.cmd or ":" -- : is the "do nothing command", so if no cmd is passed, a terminal will just open without running anything
+    -- Get the buffer and channel ids linked to this id, if there are any - this allows us to us a pre-existing terminal
+    local ids = term_ids[opts.id] or nil
+    -- If there is no buffer with this ID, create a new one and open it
+    if ids == nil then
+        create_term(opts)
+    else
+        -- We now need to check whether there is a buffer linked to this opts.id, and if there isn't we create a new term as above
+        if ids.buf == nil then
+            create_term(opts)
+        else
+            -- Send the cmd to that terminal buffer using its channel id
+            vim.api.nvim_chan_send(ids.chan, opts.cmd .. " \n")
+        end
+    end
 end
 
-M.term_cmd{cmd = "echo 'nuts'"}
 
--- [[ 
--- TODO: Add terminal functionality using the built in API.
---       NvChad uses vim.fn.termopen, which seemed promising, but there doesn't seem to be any documentation on it.
--- ]]
 -- Splits on spaces or slashes, depending on delim, if you call without delim, the default will be spaces
 function M.split(str, delim)
-    local pat = "%S+"
-    if delim == "slash" then
-        pat = "[^/]"
+    local pat = "[^%"..delim.."]+"
+    if delim == " " then
+        pat = "%S+"
     end
     local arr = {}
     for i in string.gmatch(str, pat) do
