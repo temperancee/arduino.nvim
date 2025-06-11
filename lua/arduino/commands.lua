@@ -4,7 +4,7 @@ local util = require "arduino.util"
 
 
 ---@param current_file_path string #file path to current .ino file
----@return string? #sketch.yaml file path
+---@return string? config_f #sketch.yaml file path
 local function get_config_file(current_file_path)
     -- Split at each directory
     local splt = util.split(current_file_path, "/")
@@ -128,7 +128,40 @@ function M.edit_config(info)
     return 0
 end
 
+vim.ui.input({ prompt="test" }, function (input)
+    vim.print(input)
+end)
 
+---@return number? #0 on success, nil for failure
+--- Creates a new arduino sketch, and configuration file (TODO:)
+--- TODO: Add section to create new configuration file, and add parameter to customise the arduino_path
+function M.create_file()
+    -- Get new file name input
+    local new_file_name = ""
+    vim.ui.input({ prompt = "Enter name for new sketch: " }, function(input)
+        new_file_name = input
+    end)
+    local arduino_path = "$HOME/Programming/arduino/"
+    local cmd_result = io.popen("arduino-cli sketch new "..arduino_path..new_file_name)
+    if cmd_result == nil then
+        if cmd_result == nil and new_file_name == "" then
+            vim.print("ERROR: No name entered")
+            return nil
+        else
+            vim.print("Creating new sketch failed, is arduino-cli installed?")
+            return nil
+        end
+    else
+        vim.print(cmd_result:read())
+        return 0
+    end
+end
+
+function M.create_config_file()
+    local default_port = "/dev/ttyACM0"
+    local default_core = "arduino:avr:uno"
+    local cmd = "arduino-cli board attach -p "..default_port.." -b arduino:avr:uno test.ino"
+end
 
 -- should I put the binds here?
 

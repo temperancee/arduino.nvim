@@ -4,7 +4,7 @@ local util = require "arduino.util"
 
 local M = {}
 
----@return table board_tbl #An array of tuples containing the board names and FQBNs
+---@return table? board_tbl #An array of tuples containing the board names and FQBNs
 --- Reloads the board list
 function M.refresh_board_list()
     local board_file = io.popen("arduino-cli board listall")
