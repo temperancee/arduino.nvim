@@ -110,10 +110,7 @@ vim.keymap.set("n", "<leader>ar", function ()
     lists.refresh_board_list()
     lists.refresh_port_list()
 end, { desc = "Arduino refresh picker lists" })
+vim.keymap.set("n", "<leader>an", function () commands.create_file() end, { desc = "Arduino create new sketch" })
+vim.keymap.set("n", "<leader>ag", function () commands.create_current_config_file() end, { desc = "Arduino create config file for current sketch" })
 
-
-
--- TODO: Add functionality to:
--- Auto generate sketch.yaml using default values (default defaults chosen by me, with option to change them by passing opts to lazy) and using arduino-cli board attach -p /dev/ttyACM0 -b arduino:avr:uno test.ino. Auto generate them when port/board picker is first used if one isn't found, or when creating a file as below.
--- Create sketches using arduino-cli sketch new <name>. This should make use of the users default Arduino directory setting (maybe there is a config for this somewhere, if not, I guess it could be an opts). It will appear in the status bar, sort of like renaming a variable via LSP. It will display the full path, then you can append the name on the end (maybe add a line to tell them not to use .ino on the end, since you're making a sketch directory, not the actual .ino file)
 

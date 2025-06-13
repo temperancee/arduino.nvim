@@ -2,6 +2,7 @@ local M = {}
 
 term_ids = {} -- A dictionary connecting terminal IDs (passed into create_term) linked to buffer and channel IDs
 
+-- TODO: Add an option to not open a shell within the terminal, like in the Arduino IDE
 
 ---@param opts {id: string, cmd: string}
 local function create_term(opts)

@@ -2,19 +2,26 @@ local M = {}
 
 local util = require "arduino.util"
 
-
----@param current_file_path string #file path to current .ino file
----@return string? config_f #sketch.yaml file path
-local function get_config_file(current_file_path)
+---@param current_file_path string
+---@return string[]? splt #The current file path split at each slash, or nil on failure
+local function check_file_is_ino(current_file_path)
     -- Split at each directory
     local splt = util.split(current_file_path, "/")
     -- Check the current file is indeed a .ino file - first split the file name into just the extension
     local current_file_name = util.split(splt[#splt], ".")
     if current_file_name[#current_file_name] ~= "ino" then
         vim.print("ERROR: The current buffer does not contain a .ino file")
-        local err_file = io.open("~/err_file.txt", "w")
-        err_file:write("ERROR: The current buffer does not contain a .ino file")
-        io.close(err_file)
+        return nil
+    end
+    return splt
+end
+
+---@param current_file_path string #file path to current .ino file
+---@return string? config_f #sketch.yaml file path
+local function get_config_file(current_file_path)
+    local splt = check_file_is_ino(current_file_path)
+    -- propagate error forwards if necessary
+    if splt == nil then
         return nil
     end
     -- replace the .ino file with "sketch.yaml" and rejoin the string to get the config filepath
@@ -39,10 +46,6 @@ local function read_config(current_file_path)
     local file = io.open(config_f, "r")
     if file == nil then
         vim.print("ERROR: No sketch.yaml found in project directory")
-        vim.print("Trying to access "..config_f)
-        local err_file = io.open("~/err_file.txt", "w")
-        err_file:write("ERROR: No sketch.yaml found in project directory")
-        io.close(err_file)
         return nil
     end
     local contents = {}
@@ -53,8 +56,6 @@ local function read_config(current_file_path)
     io.close(file)
     return contents
 end
-
--- TODO: test that it all works and add documentation comments
 
 ---@return {conf: {fqbn: string, port: string}, program: string}? #Dictionary containing the configuration details and program name, nil for error
 --- Compiles the arduino program in the current buffer using the fqbn specified in sketch.yaml
@@ -116,25 +117,25 @@ function M.edit_config(info)
     end
     local file = io.open(config_f, "w")
     local str_contents = "default_fqbn: "..contents["fqbn"].."\ndefault_port: "..contents["port"]
-    local success, err = file:write(str_contents) -- IDK why the LSP thinks I haven't nil checked this
+    if file == nil then
+        vim.print("ERROR: Opening sketch.yaml file failed")
+        return nil
+    end
+    local success, err = file:write(str_contents)
     io.close(file)
     if success == nil then
         vim.print("Writing to sketch.yaml failed, ERROR: "..err)
-        local err_file = io.open("~/err_file.txt", "w")
-        err_file:write("Writing to sketch.yaml failed, ERROR: "..err)
-        io.close(err_file)
         return nil
     end
     return 0
 end
 
-vim.ui.input({ prompt="test" }, function (input)
-    vim.print(input)
-end)
 
 ---@return number? #0 on success, nil for failure
---- Creates a new arduino sketch, and configuration file (TODO:)
---- TODO: Add section to create new configuration file, and add parameter to customise the arduino_path
+--- Creates a new arduino sketch, and configuration file 
+-- TODO: 
+-- Add parameter to customise the arduino_path
+-- Open the newly created file in the buffer, if it is empty, if it is not, provide dialouge to open it
 function M.create_file()
     -- Get new file name input
     local new_file_name = ""
@@ -142,7 +143,8 @@ function M.create_file()
         new_file_name = input
     end)
     local arduino_path = "$HOME/Programming/arduino/"
-    local cmd_result = io.popen("arduino-cli sketch new "..arduino_path..new_file_name)
+    local ino_file = arduino_path..new_file_name
+    local cmd_result = io.popen("arduino-cli sketch new "..ino_file)
     if cmd_result == nil then
         if cmd_result == nil and new_file_name == "" then
             vim.print("ERROR: No name entered")
@@ -153,16 +155,39 @@ function M.create_file()
         end
     else
         vim.print(cmd_result:read())
+        if M.create_config_file(ino_file) then
+            return 0
+        else
+            return nil
+        end
+    end
+end
+
+---@param ino_file string
+---@return number? #0 on success, nil on failure
+function M.create_config_file(ino_file)
+    local default_port = "/dev/ttyACM0"
+    local default_core = "arduino:avr:uno"
+    local cmd_result = io.popen("arduino-cli board attach -p "..default_port.." -b "..default_core.." "..ino_file)
+    if cmd_result == nil then
+        vim.print("Creating configuration file failed, is arduino-cli installed?")
+        return nil
+    else
+        vim.print("Configuration file created successfully")
         return 0
     end
 end
 
-function M.create_config_file()
-    local default_port = "/dev/ttyACM0"
-    local default_core = "arduino:avr:uno"
-    local cmd = "arduino-cli board attach -p "..default_port.." -b arduino:avr:uno test.ino"
-end
 
--- should I put the binds here?
+---@return number? #0 on success, nil on failure
+---Create the config file for the .ino file in the current buffer
+function M.create_current_config_file()
+    local current_file_path = vim.api.nvim_buf_get_name(0)
+    if check_file_is_ino(current_file_path) == nil then
+        return nil
+    end
+    M.create_config_file(current_file_path)
+    return 0
+end
 
 return M

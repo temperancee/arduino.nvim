@@ -34,6 +34,7 @@ function M.refresh_port_list()
     local port_file, err = io.popen("arduino-cli board list --json | jq -r .detected_ports[].port.label")
     if port_file == nil then
         vim.print("Failed to read arduino-cli board list, ERROR: "..err)
+        return nil
     end
     local port_tbl = {}
     for line in port_file:lines() do
