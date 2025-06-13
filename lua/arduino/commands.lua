@@ -49,10 +49,9 @@ local function read_config(current_file_path)
         return nil
     end
     local contents = {}
-    -- The config file is a yaml file, so we want to split at the space to get the entry. This works because there are no spaces in the fqbns or ports
-    -- TODO: It would probably be more efficient to simply substring the string, as we know exactly where the fqbn/port will start due to the fixed format
-    contents["fqbn"] = util.split(file:read(), " ")[2]
-    contents["port"] = util.split(file:read(), " ")[2]
+    -- The config file is a yaml file. We know exactly where the entries start (15 characters in), so we read from there
+    contents["fqbn"] = file:read():sub(15)
+    contents["port"] = file:read():sub(15)
     io.close(file)
     return contents
 end
