@@ -1,3 +1,4 @@
+
 local M = {}
 
 term_ids = {} -- A dictionary connecting terminal IDs (passed into create_term) linked to buffer and channel IDs
@@ -37,20 +38,6 @@ function M.runner_term(opts)
             vim.api.nvim_chan_send(ids.chan, opts.cmd .. " \n")
         end
     end
-end
-
-
--- Splits on spaces or slashes, depending on delim, if you call without delim, the default will be spaces
-function M.split(str, delim)
-    local pat = "[^%"..delim.."]+"
-    if delim == " " then
-        pat = "%S+"
-    end
-    local arr = {}
-    for i in string.gmatch(str, pat) do
-        table.insert(arr, i)
-    end
-    return arr
 end
 
 return M
