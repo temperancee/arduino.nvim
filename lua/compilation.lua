@@ -16,7 +16,7 @@ function M.compile()
     if conf == nil then
         return nil
     end
-    local cmd = "arduino-cli compile --fqbn "..conf["fqbn"].." "..program
+    local cmd = "arduino-cli compile --fqbn "..conf["fqbn"].." --clean "..program
     term_util.runner_term {
         cmd = cmd,
         id = "arduino",

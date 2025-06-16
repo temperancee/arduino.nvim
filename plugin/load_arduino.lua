@@ -23,6 +23,44 @@ vim.api.nvim_create_user_command("Arduino Config", create_current_config_file, {
 vim.keymap.set("n", "<leader>ag", create_current_config_file, { desc = "Arduino create config file for current sketch" })
 
 
+local function board()
+    require("pickers").board()
+end
+vim.api.nvim_create_user_command("Arduino Board", board, { desc = "Arduino board picker" })
+vim.keymap.set("n", "<leader>ab", board, { desc = "Arduino board picker" })
+
+local function port()
+    require("pickers").port()
+end
+vim.api.nvim_create_user_command("Arduino Port", port, { desc = "Arduino port picker" })
+vim.keymap.set("n", "<leader>ap", port, { desc = "Arduino port picker" })
+
+local function refresh_lists()
+    require("pickers").refresh_lists()
+end
+vim.api.nvim_create_user_command("Arduino Refresh", refresh_lists, { desc = "Arduino refresh picker lists" })
+vim.keymap.set("n", "<leader>ar", refresh_lists, { desc = "Arduino refresh picker lists" })
+
+
+-- Set keymaps and user commands only in the current buffer (.ino file)
+-- local bufnr = vim.api.nvim_get_current_buf()
+-- local function board()
+--     require("pickers").board()
+-- end
+-- vim.api.nvim_create_user_command("Arduino Board", board, { desc = "Arduino board picker" })
+-- vim.keymap.set("n", "<leader>ab", board, { desc = "Arduino board picker", buffer = bufnr })
+--
+-- local function port()
+--     require("pickers").port()
+-- end
+-- vim.api.nvim_create_user_command("Arduino Port", port, { desc = "Arduino port picker" })
+-- vim.keymap.set("n", "<leader>ap", port, { desc = "Arduino port picker", buffer = bufnr})
+--
+-- local function refresh_lists()
+--     require("pickers").refresh_lists()
+-- end
+-- vim.api.nvim_create_user_command("Arduino Refresh", refresh_lists, { desc = "Arduino refresh picker lists" })
+-- vim.keymap.set("n", "<leader>ar", refresh_lists, { desc = "Arduino refresh picker lists", buffer = bufnr})
 
 -- NOTE:
 -- This plugin is actually multiple different plugins
