@@ -7,7 +7,7 @@ local M = {}
 ---@return string[]? splt #The current file path split at each slash, or nil on failure
 function M.check_file_is_ino(current_file_path)
     -- First, check the path isn't nil
-    vim.print("cfp: "..current_file_path)
+    -- vim.print("cfp: "..current_file_path)
     if current_file_path == nil then
         vim.print("ERROR: This is not a .ino file")
         return nil

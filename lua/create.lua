@@ -12,7 +12,6 @@ function M.create_sketch()
     local new_file_name = ""
     vim.ui.input({ prompt = "Enter name for new sketch: " }, function(input)
         new_file_name = input
-        vim.print("\n")
     end)
     local arduino_path = "~/Programming/arduino/"
     local ino_file = arduino_path..new_file_name
