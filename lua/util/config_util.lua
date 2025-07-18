@@ -4,25 +4,23 @@ local misc_util = require "util.misc_util"
 local M = {}
 
 ---@param current_file_path string
----@return string[]? splt, string[] msg #The current file path split at each slash, or nil on failure
+---@return string[]? splt #The current file path split at each slash, or nil on failure
 function M.check_file_is_ino(current_file_path)
-    -- Initialise confirmation/error message to print at the end of the function
-    local msg = {}
     -- First, check the path isn't nil
     -- vim.print("cfp: "..current_file_path)
     if current_file_path == nil then
-        table.insert(msg, "ERROR: This is not a .ino file")
-        return nil, msg
+        vim.notify("ERROR: This is not a .ino file", vim.log.levels.ERROR)
+        return nil
     end
     -- Split at each directory
     local splt = misc_util.split(current_file_path, "/")
     -- Check the current file is indeed a .ino file - first split the file name into just the extension
     local current_file_name = misc_util.split(splt[#splt], ".")
     if current_file_name[#current_file_name] ~= "ino" then
-        table.insert(msg, "ERROR: This is not a .ino file")
-        return nil, msg
+        vim.notify("ERROR: This is not a .ino file", vim.log.levels.ERROR)
+        return nil
     end
-    return splt, msg
+    return splt
 end
 
 
@@ -43,9 +41,9 @@ end
 
 
 
+---Reads in the config by getting the currently open file (assumed to be the .ino file - we check this and send an error message otherwise), then navigating to the sketch.yaml file in that directory
 ---@param config_f string The path of the sketch.yaml file
 ---@return {fqbn: string, port: string}? #Configuration details, nil for error
---- Reads in the config by getting the currently open file (assumed to be the .ino file - we check this and send an error message otherwise), then navigating to the sketch.yaml file in that directory
 function M.read_config(config_f)
     -- Read from the config file, checking if it exists
     local file = io.open(config_f, "r")
@@ -60,5 +58,33 @@ function M.read_config(config_f)
     io.close(file)
     return contents
 end
+
+---Check if input is a valid sketch filename/path
+---@param input string
+---@return number?, string err -- 0 on success, nil and an error code on failure
+function M.is_valid_filename(input)
+  if input == nil or input == "" then
+    return nil, "Path is empty"
+  end
+
+  -- Disallow trailing slashes (would be treated as directory)
+  if input:sub(-1) == "/" then
+    return nil, "Cannot end with slash"
+  end
+
+  -- Disallow path components that are empty, ".", "..", or comprised entirely of spaces
+  for part in string.gmatch(input, "[^/]+") do
+    if part == "" or part == "." or part == ".." or not part:match("%S") then
+      return nil, "Invalid path component: " .. part
+    end
+    -- Filter escape sequences
+    if part:find("[:%c]") then
+      return nil, "Cannot have escape sequences: " .. part
+    end
+  end
+
+  return 0, ""
+end
+
 
 return M
