@@ -4,23 +4,25 @@ local misc_util = require "util.misc_util"
 local M = {}
 
 ---@param current_file_path string
----@return string[]? splt #The current file path split at each slash, or nil on failure
+---@return string[]? splt, string[] msg #The current file path split at each slash, or nil on failure
 function M.check_file_is_ino(current_file_path)
+    -- Initialise confirmation/error message to print at the end of the function
+    local msg = {}
     -- First, check the path isn't nil
     -- vim.print("cfp: "..current_file_path)
     if current_file_path == nil then
-        vim.print("ERROR: This is not a .ino file")
-        return nil
+        table.insert(msg, "ERROR: This is not a .ino file")
+        return nil, msg
     end
     -- Split at each directory
     local splt = misc_util.split(current_file_path, "/")
     -- Check the current file is indeed a .ino file - first split the file name into just the extension
     local current_file_name = misc_util.split(splt[#splt], ".")
     if current_file_name[#current_file_name] ~= "ino" then
-        vim.print("ERROR: This is not a .ino file")
-        return nil
+        table.insert(msg, "ERROR: This is not a .ino file")
+        return nil, msg
     end
-    return splt
+    return splt, msg
 end
 
 
