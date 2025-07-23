@@ -4,6 +4,7 @@ local M = {}
 term_ids = {} -- A dictionary connecting terminal IDs (passed into create_term) linked to buffer and channel IDs
 
 -- TODO: Add an option to not open a shell within the terminal, like in the Arduino IDE
+-- TODO: Add option to use hidden buffers
 
 ---@param opts {id: string, cmd: string}
 local function create_term(opts)
@@ -19,6 +20,8 @@ local function create_term(opts)
         term_ids[opts.id] = {buf=buf, chan=chan}
 end
 
+---Run a command in a terminal, creating a new one if this function has not been used previously
+---@param opts {id: string, cmd: string}
 function M.runner_term(opts)
     if opts.id == nil then
         print("ERROR: No ID passed")
@@ -34,6 +37,8 @@ function M.runner_term(opts)
         if ids.buf == nil then
             create_term(opts)
         else
+            -- Check if the buffer is hidden, and unhide it if so
+            -- if ids.buf
             -- Send the cmd to that terminal buffer using its channel id
             vim.api.nvim_chan_send(ids.chan, opts.cmd .. " \n")
         end
