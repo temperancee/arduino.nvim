@@ -1,6 +1,8 @@
 # arduino.nvim
 
-Arduino integration within Neovim, using telescope. (Partially abandoned)
+**This project is abandoned in favour of (Arduino-Nvim)[https://github.com/yuukiflow/Arduino-Nvim]).**
+
+Arduino integration within Neovim, using telescope. 
 
 ## Features
 - Compile code via a keybind and see the output in a Neovim terminal
